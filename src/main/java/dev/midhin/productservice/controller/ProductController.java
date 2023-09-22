@@ -25,9 +25,9 @@ public ProductController(@Qualifier("fakeStoreProductService") ProductService pr
 }
 
     @GetMapping("")
-   public ResponseEntity<List<GenericProductDto>> getAllProduct(){
-    List<GenericProductDto> allProduct = productService.getAllProduct ();
-   return null;
+   public List<GenericProductDto> getAllProduct(){
+  //  List<GenericProductDto> allProduct = productService.getAllProduct ();
+   return productService.getAllProduct ();
 
   }
     @GetMapping("/{id}")

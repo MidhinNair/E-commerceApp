@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service("fakeStoreProductService")
@@ -24,9 +26,22 @@ public class FakeStoreProductServiceImpl implements  ProductService{
     @Override
     public List<GenericProductDto> getAllProduct() {
         RestTemplate restTemplate = restTemplateBuilder.build ();
-//        ResponseEntity<List<GenericProductDto>> response=
-//                restTemplate.getForEntity (getAllProductRequestUrl,GenericProductDto.class,maz)
-        return null;
+        //when ever you do a generic arraylist this datatype is only compile at runtime
+
+        ResponseEntity<FakeStoreProductDto[]> response=
+                restTemplate.getForEntity (getAllProductRequestUrl,FakeStoreProductDto[].class );
+
+        List<GenericProductDto> ans = new ArrayList<> ();
+        for(FakeStoreProductDto fakeStoreProductDto : response.getBody ()){
+            GenericProductDto product = new GenericProductDto ();
+            product.setTitle (fakeStoreProductDto.getTitle ());
+            product.setCategory (fakeStoreProductDto.getCategory ());
+            product.setPrice (fakeStoreProductDto.getPrice ());
+            product.setDescription (fakeStoreProductDto.getDescription ());
+            product.setImage (fakeStoreProductDto.getImage ());
+            ans.add (product);
+        }
+        return ans;
     }
 
     @Override
