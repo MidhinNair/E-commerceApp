@@ -15,7 +15,7 @@ public class FakeStoreProductDto {
     private Long id;
     private String title;
     private double price;
-    private Category category;
+    private String category;
     private String description;
     private  String image;
 }

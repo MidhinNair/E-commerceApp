@@ -5,10 +5,14 @@ import dev.midhin.productservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
-@RequestMapping("api/v1/products/")
+@RequestMapping("api/v1/products")
 public class ProductController {
 
     private final ProductService productService;
@@ -21,24 +25,29 @@ public ProductController(@Qualifier("fakeStoreProductService") ProductService pr
 }
 
     @GetMapping("")
-    public void getAllProduct(){
+   public ResponseEntity<List<GenericProductDto>> getAllProduct(){
+    List<GenericProductDto> allProduct = productService.getAllProduct ();
+   return null;
 
-    }
+  }
     @GetMapping("/{id}")
     public GenericProductDto getProductById(@PathVariable("id") Long id ){
     return productService.getProductById(id);
-
     }
     @DeleteMapping("/{id}")
     public void deleteProductById(@PathVariable("id") Long id ){
-
+        productService.deleteProductById (id);
+        System.out.println ("product deleted of id ="+id);
     }
-    @PostMapping("")
-    public void createProduct(){
+    @PostMapping("")  //what ever is the request body please convert to genericDto
+    public GenericProductDto createProduct(@RequestBody GenericProductDto genericProductDto ){
+        System.out.println (genericProductDto.getDescription ());
+    return productService.createProduct (genericProductDto);
 
     }
     @PutMapping("/{id}")
-    public void updateProduct(@PathVariable("id") Long id ){
-
+    public GenericProductDto updateProduct(@PathVariable("id") Long id , @RequestBody GenericProductDto genericProductDto ){
+        System.out.println ("Product updated of id ="+id);
+        return productService.updateProductById (id,genericProductDto);
     }
 }
