@@ -25,9 +25,7 @@ public class SelfProductServiceImpl implements  ProductService{
     }
 
     @Override
-    public void deleteProductById(Long id) {
-
-    }
+    public GenericProductDto deleteProductById(Long id) {return null;}
 
     @Override
     public GenericProductDto updateProductById(Long id, GenericProductDto genericProductDto) {

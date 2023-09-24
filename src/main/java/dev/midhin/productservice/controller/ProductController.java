@@ -1,10 +1,13 @@
 package dev.midhin.productservice.controller;
 
+import dev.midhin.productservice.Dtos.ExceptionDto;
 import dev.midhin.productservice.Dtos.GenericProductDto;
+import dev.midhin.productservice.Exceptions.NotFontException;
 import dev.midhin.productservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,13 +34,17 @@ public ProductController(@Qualifier("fakeStoreProductService") ProductService pr
 
   }
     @GetMapping("/{id}")
-    public GenericProductDto getProductById(@PathVariable("id") Long id ){
+    public GenericProductDto getProductById(@PathVariable("id") Long id )throws NotFontException{
     return productService.getProductById(id);
     }
     @DeleteMapping("/{id}")
-    public void deleteProductById(@PathVariable("id") Long id ){
+    public ResponseEntity <GenericProductDto> deleteProductById(@PathVariable("id") Long id )throws NotFontException{
         productService.deleteProductById (id);
         System.out.println ("product deleted of id ="+id);
+        //cuttom HttpStatus
+        ResponseEntity<GenericProductDto> response =
+                new ResponseEntity<> (productService.deleteProductById (id), HttpStatus.ACCEPTED );
+        return response;
     }
     @PostMapping("")  //what ever is the request body please convert to genericDto
     public GenericProductDto createProduct(@RequestBody GenericProductDto genericProductDto ){
@@ -46,8 +53,9 @@ public ProductController(@Qualifier("fakeStoreProductService") ProductService pr
 
     }
     @PutMapping("/{id}")
-    public GenericProductDto updateProduct(@PathVariable("id") Long id , @RequestBody GenericProductDto genericProductDto ){
-        System.out.println ("Product updated of id ="+id);
-        return productService.updateProductById (id,genericProductDto);
+    public GenericProductDto updateProduct(@PathVariable("id") Long id , @RequestBody GenericProductDto genericProductDto ) throws  NotFontException{
+        System.out.println ("Product updated of id =" + id);
+        return productService.updateProductById (id, genericProductDto);
     }
+
 }

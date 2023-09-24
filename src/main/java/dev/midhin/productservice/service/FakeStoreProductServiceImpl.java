@@ -2,10 +2,15 @@ package dev.midhin.productservice.service;
 
 import dev.midhin.productservice.Dtos.FakeStoreProductDto;
 import dev.midhin.productservice.Dtos.GenericProductDto;
+import dev.midhin.productservice.Exceptions.NotFontException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -33,13 +38,7 @@ public class FakeStoreProductServiceImpl implements  ProductService{
 
         List<GenericProductDto> ans = new ArrayList<> ();
         for(FakeStoreProductDto fakeStoreProductDto : response.getBody ()){
-            GenericProductDto product = new GenericProductDto ();
-            product.setTitle (fakeStoreProductDto.getTitle ());
-            product.setCategory (fakeStoreProductDto.getCategory ());
-            product.setPrice (fakeStoreProductDto.getPrice ());
-            product.setDescription (fakeStoreProductDto.getDescription ());
-            product.setImage (fakeStoreProductDto.getImage ());
-            ans.add (product);
+            ans.add (convertFakeStoreToGenericDto (fakeStoreProductDto));
         }
         return ans;
     }
@@ -52,30 +51,20 @@ public class FakeStoreProductServiceImpl implements  ProductService{
                 restTemplate.getForEntity (getProductByIdRequestUrl, FakeStoreProductDto.class,id);//post/put
 
         FakeStoreProductDto fakeStoreProductDto = response.getBody ();
-        GenericProductDto product = new GenericProductDto ();
 
-        product.setTitle (fakeStoreProductDto.getTitle ());
-        product.setCategory (fakeStoreProductDto.getCategory ());
-        product.setPrice (fakeStoreProductDto.getPrice ());
-        product.setDescription (fakeStoreProductDto.getDescription ());
-        product.setImage (fakeStoreProductDto.getImage ());
-        return product;
+        return convertFakeStoreToGenericDto(fakeStoreProductDto);
     }
     @Override
-    public GenericProductDto updateProductById(Long id , GenericProductDto genericProductDto) {
+    public GenericProductDto updateProductById(Long id , GenericProductDto genericProductDto) throws NotFontException {
         RestTemplate restTemplate = restTemplateBuilder.build ();
         ResponseEntity<FakeStoreProductDto> response=
                 restTemplate.getForEntity (updateProductRequestUrl,FakeStoreProductDto.class,id);
         FakeStoreProductDto fakeStoreProductDto = response.getBody ();
-        GenericProductDto updatedGenericProductDto = new GenericProductDto ();
+        if (fakeStoreProductDto == null){
+            throw new NotFontException ("No Iteam Fond with the ID"+id+"iteam doesn't exist");
+        }
 
-        updatedGenericProductDto.setCategory (fakeStoreProductDto.getCategory ());
-        updatedGenericProductDto.setId (fakeStoreProductDto.getId ());
-        updatedGenericProductDto.setDescription (fakeStoreProductDto.getDescription ());
-        updatedGenericProductDto.setTitle (fakeStoreProductDto.getTitle ());
-        updatedGenericProductDto.setPrice (fakeStoreProductDto.getPrice ());
-        updatedGenericProductDto.setImage (fakeStoreProductDto.getImage ());
-        return updatedGenericProductDto;
+        return convertFakeStoreToGenericDto(fakeStoreProductDto);
     }
 
     public GenericProductDto createProduct (GenericProductDto genericProductDto){
@@ -86,9 +75,32 @@ public class FakeStoreProductServiceImpl implements  ProductService{
     }
 
     @Override
-    public void deleteProductById(Long id) {
+    public GenericProductDto deleteProductById(Long id) throws NotFontException {
         RestTemplate restTemplate = restTemplateBuilder.build ();
-        restTemplate.delete (deleteProductRequestUrl,id);
+        // restTemplate.delete (deleteProductRequestUrl,id);
+        //exchange or execute custom template
+
+        RequestCallback requestCallback = restTemplate.acceptHeaderRequestCallback(GenericProductDto.class);
+        ResponseExtractor<ResponseEntity<FakeStoreProductDto>> responseExtractor =
+                restTemplate.responseEntityExtractor(FakeStoreProductDto.class);
+        ResponseEntity<FakeStoreProductDto> responce =
+                restTemplate.execute(deleteProductRequestUrl, HttpMethod.DELETE, requestCallback, responseExtractor, id);
+        if (responce.getBody () == null){
+            throw new NotFontException ("No Iteam Fond with the ID"+id+"iteam doesn't exist");
+        }
+    return convertFakeStoreToGenericDto (responce.getBody ()) ;
+    }
+
+    public GenericProductDto convertFakeStoreToGenericDto(FakeStoreProductDto fakeStoreProductDto){
+        GenericProductDto product = new GenericProductDto ();
+        product.setId (fakeStoreProductDto.getId ());
+        product.setTitle (fakeStoreProductDto.getTitle ());
+        product.setCategory (fakeStoreProductDto.getCategory ());
+        product.setPrice (fakeStoreProductDto.getPrice ());
+        product.setDescription (fakeStoreProductDto.getDescription ());
+        product.setImage (fakeStoreProductDto.getImage ());
+        return  product;
+
     }
 
 
